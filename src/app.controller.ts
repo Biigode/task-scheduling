@@ -1,12 +1,18 @@
-import { Controller, Get } from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
 import { AppService } from './app.service';
+import { CreateApiHealthService } from './createApiHealth.service';
+import { CreateJobDto } from './createJobDto';
 
-@Controller()
+@Controller('job')
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  constructor(
+    private readonly appService: AppService,
+    private readonly healthService: CreateApiHealthService,
+  ) {}
 
-  @Get()
-  getHello(): string {
-    return this.appService.getHello();
+  @Post()
+  getHealth(@Body() CreateJobDto: CreateJobDto): string {
+    const { name, seconds } = CreateJobDto;
+    return this.healthService.addCronJob(name, seconds);
   }
 }
