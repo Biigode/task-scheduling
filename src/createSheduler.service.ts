@@ -12,14 +12,19 @@ interface IListObjectsResponse {
 }
 
 @Injectable()
-export class CreateApiHealthService {
+export class CreateShedulerService {
   constructor(
     private readonly httpService: HttpService,
     private schedulerRegistry: SchedulerRegistry,
   ) {}
-  private readonly logger = new Logger(CreateApiHealthService.name);
+  private readonly logger = new Logger(CreateShedulerService.name);
 
-  addCronJob(name: string, seconds: string): string {
+  listCronJob(): Array<string> {
+    const jobs = this.schedulerRegistry.getCronJobs();
+    return [...jobs.keys()];
+  }
+
+  addCronJob(name: string, seconds: string): Record<string, string> {
     const job = new CronJob(`${seconds} * * * * *`, () => {
       this.logger.warn(`time (${seconds}) for job ${name} to run!`);
       this.listObjects().subscribe({
@@ -38,10 +43,12 @@ export class CreateApiHealthService {
     this.logger.warn(
       `job ${name} added for each minute at ${seconds} seconds!`,
     );
-    return `job ${name} added for each minute at ${seconds} seconds!`;
+    return {
+      message: `job ${name} added for each minute at ${seconds} seconds!`,
+    };
   }
 
-  listObjects(): Observable<Array<IListObjectsResponse>> {
+  private listObjects(): Observable<Array<IListObjectsResponse>> {
     return this.httpService
       .get<Array<IListObjectsResponse>>('https://api.restful-api.dev/objects')
       .pipe(map((res: AxiosResponse<Array<IListObjectsResponse>>) => res.data));
